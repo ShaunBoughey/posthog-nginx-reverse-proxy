@@ -6,13 +6,11 @@ RUN apt-get update
 
 RUN apt-get install -y gettext-base
 
-ARG SERVER_NAME
+ARG RAILWAY_PUBLIC_DOMAIN
 
-ARG PORT
+ARG POSTHOG_CLOUD_REGION
 
-ARG POSTHOG_HOST=app.posthog.com
-
-RUN envsubst '$SERVER_NAME,$PORT,$POSTHOG_HOST' < nginx.conf.template > nginx.conf
+RUN envsubst '$RAILWAY_PUBLIC_DOMAIN,$POSTHOG_CLOUD_REGION' < nginx.conf.template > nginx.conf
 
 FROM nginx:latest
 
