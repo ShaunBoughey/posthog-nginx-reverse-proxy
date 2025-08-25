@@ -1,0 +1,31 @@
+worker_processes auto;
+
+events { worker_connections 1024; }
+
+
+http {
+    server {
+        listen 80;
+
+        server_name ${RAILWAY_PUBLIC_DOMAIN};
+
+        # DNS resolver with 1 second TTL for semi-dynamic DNS resolution.
+        # 1s is the shortest time you can set for a TTL, because 0s is equivalent to unset.
+        # ipv6=off ensures we only use IPv4 for upstream connections because Railway doesn't support outbound IPv6.
+        resolver 8.8.8.8 8.8.4.4 valid=1s ipv6=off;
+
+        location ~ ^/static/(.*)$ {
+            set $posthog_static "https://${POSTHOG_CLOUD_REGION}-assets.i.posthog.com/static/";
+            # use variable to force proper DNS re-resolution, also must manually pass along path
+            proxy_pass $posthog_static$1$is_args$args;
+            proxy_set_header Host "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
+        }
+
+        location ~ ^/(.*)$ {
+            set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
+            # use variable to force proper DNS re-resolution, also must manually pass along path
+            proxy_pass $posthog_main$1$is_args$args;
+            proxy_set_header Host "${POSTHOG_CLOUD_REGION}.i.posthog.com";
+        }
+    }
+}
