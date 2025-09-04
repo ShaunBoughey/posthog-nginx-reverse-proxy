@@ -4,8 +4,10 @@ events { worker_connections 1024; }
 
 
 http {
+    sendfile on;
+
     server {
-        listen 80;
+        listen ${PORT};
 
         server_name ${SERVER_NAME};
 
