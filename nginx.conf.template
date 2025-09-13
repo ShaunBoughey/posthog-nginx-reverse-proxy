@@ -42,6 +42,8 @@ http {
           add_header Vary Origin always;
           add_header Access-Control-Allow-Methods GET,POST,OPTIONS always;
           add_header Access-Control-Allow-Headers * always;
+          add_header Access-Control-Allow-Credentials true always;
+        
           if ($request_method = OPTIONS) { return 204; }
         
           set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
