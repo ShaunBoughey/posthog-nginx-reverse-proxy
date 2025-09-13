@@ -23,6 +23,8 @@ http {
         }
 
         location ~ ^/static/(.*)$ {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET' always;
             set $posthog_static "https://${POSTHOG_CLOUD_REGION}-assets.i.posthog.com/static/";
             # use variable to force proper DNS re-resolution, also must manually pass along path
             proxy_pass $posthog_static$1$is_args$args;
@@ -30,6 +32,8 @@ http {
         }
 
         location ~ ^/(.*)$ {
+            add_header 'Access-Control-Allow-Origin' '*' always;
+            add_header 'Access-Control-Allow-Methods' 'GET' always;
             set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
             # use variable to force proper DNS re-resolution, also must manually pass along path
             proxy_pass $posthog_main$1$is_args$args;
