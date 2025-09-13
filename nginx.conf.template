@@ -43,20 +43,24 @@ http {
         }
         
         location ~ ^/(.*)$ {
-          add_header Access-Control-Allow-Origin * always;
-          add_header Vary Origin always;
-          add_header Access-Control-Allow-Methods GET,POST,OPTIONS always;
-          add_header Access-Control-Allow-Headers * always;
-          add_header Access-Control-Allow-Credentials true always;
+            proxy_hide_header 'Access-Control-Allow-Origin';
+            proxy_hide_header 'Access-Control-Allow-Credentials';
         
-          if ($request_method = OPTIONS) { return 204; }
+            # Now, add the correct headers using the specific origin
+            add_header Access-Control-Allow-Origin $http_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Methods GET,POST,OPTIONS always;
+            add_header Access-Control-Allow-Headers * always;
+            add_header Access-Control-Allow-Credentials true always;
         
-          set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
-          proxy_pass $posthog_main$1$is_args$args;
+            if ($request_method = OPTIONS) { return 204; }
         
-          proxy_set_header Host "${POSTHOG_CLOUD_REGION}.i.posthog.com";
-          proxy_ssl_server_name on;
-          proxy_ssl_name "${POSTHOG_CLOUD_REGION}.i.posthog.com";
+            set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
+            proxy_pass $posthog_main$1$is_args$args;
+        
+            proxy_set_header Host "${POSTHOG_CLOUD_REGION}.i.posthog.com";
+            proxy_ssl_server_name on;
+            proxy_ssl_name "${POSTHOG_CLOUD_REGION}.i.posthog.com";
         }
     }
 }
