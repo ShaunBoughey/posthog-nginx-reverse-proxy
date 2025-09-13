@@ -23,18 +23,23 @@ http {
         }
 
         location ~ ^/static/(.*)$ {
-          add_header Access-Control-Allow-Origin $http_origin always;
-          add_header Vary Origin always;
-          add_header Access-Control-Allow-Methods GET,OPTIONS always;
-          add_header Access-Control-Allow-Headers * always;
-          if ($request_method = OPTIONS) { return 204; }
+            proxy_hide_header 'Access-Control-Allow-Origin';
         
-          set $posthog_static "https://${POSTHOG_CLOUD_REGION}-assets.i.posthog.com/static/";
-          proxy_pass $posthog_static$1$is_args$args;
+            # Now, add the correct headers
+            add_header Access-Control-Allow-Origin $http_origin always;
+            add_header Vary Origin always;
+            add_header Access-Control-Allow-Methods GET,OPTIONS always;
+            add_header Access-Control-Allow-Headers * always;
+            add_header Access-Control-Allow-Credentials true always;
         
-          proxy_set_header Host "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
-          proxy_ssl_server_name on;
-          proxy_ssl_name "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
+            if ($request_method = OPTIONS) { return 204; }
+        
+            set $posthog_static "https://${POSTHOG_CLOUD_REGION}-assets.i.posthog.com/static/";
+            proxy_pass $posthog_static$1$is_args$args;
+        
+            proxy_set_header Host "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
+            proxy_ssl_server_name on;
+            proxy_ssl_name "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
         }
         
         location ~ ^/(.*)$ {
