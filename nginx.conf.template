@@ -23,22 +23,35 @@ http {
         }
 
         location ~ ^/static/(.*)$ {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'GET' always;
-            set $posthog_static "https://${POSTHOG_CLOUD_REGION}-assets.i.posthog.com/static/";
-            # use variable to force proper DNS re-resolution, also must manually pass along path
-            proxy_pass $posthog_static$1$is_args$args;
-            proxy_set_header Host "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
+          # CORS
+          add_header Access-Control-Allow-Origin $http_origin always;
+          add_header Vary Origin always;
+          add_header Access-Control-Allow-Methods GET,OPTIONS always;
+          add_header Access-Control-Allow-Headers * always;
+          if ($request_method = OPTIONS) { return 204; }
+        
+          # Upstream (SNI required)
+          set $posthog_static "https://${POSTHOG_CLOUD_REGION}-assets.i.posthog.com/static/";
+          proxy_pass $posthog_static$1$is_args$args;
+          proxy_set_header Host "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
+          proxy_ssl_server_name on;
+          proxy_ssl_name "${POSTHOG_CLOUD_REGION}-assets.i.posthog.com";
         }
-
+        
         location ~ ^/(.*)$ {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'GET' always;
-            set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
-            # use variable to force proper DNS re-resolution, also must manually pass along path
-            proxy_pass $posthog_main$1$is_args$args;
-            proxy_set_header Host "${POSTHOG_CLOUD_REGION}.i.posthog.com";
+          # CORS
+          add_header Access-Control-Allow-Origin $http_origin always;
+          add_header Vary Origin always;
+          add_header Access-Control-Allow-Methods GET,POST,OPTIONS always;
+          add_header Access-Control-Allow-Headers * always;
+          if ($request_method = OPTIONS) { return 204; }
+        
+          # Upstream (SNI required)
+          set $posthog_main "https://${POSTHOG_CLOUD_REGION}.i.posthog.com/";
+          proxy_pass $posthog_main$1$is_args$args;
+          proxy_set_header Host "${POSTHOG_CLOUD_REGION}.i.posthog.com";
+          proxy_ssl_server_name on;
+          proxy_ssl_name "${POSTHOG_CLOUD_REGION}.i.posthog.com";
         }
-
     }
 }
